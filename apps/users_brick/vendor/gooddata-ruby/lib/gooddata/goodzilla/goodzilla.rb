@@ -17,9 +17,9 @@ module GoodData
         evens.zip(odds)
       end
 
-      # Scans the provided MAQL and returns Array of all the URIs included in the MAQL. This basically return anything that is enclosed in aquare brackets []
+      # Scans the provided MAQL and returns Array of all the URIs included in the MAQL. This basically returns anything that is enclosed in square brackets []
       # @param maql Input MAQL string
-      # @return [Array<String>] Pairs of URIs
+      # @return [Array<String>] List of URIs
       def get_uris(a_maql_string)
         a_maql_string.scan(/\[([^\"\]]+)\]/).flatten.uniq
       end
@@ -88,28 +88,62 @@ module GoodData
         end
       end
 
-      # Pretty prints the MAQL expression. This basically means it finds out names of objects and elements and print their values instead of URIs
-      # @param expression [String] Expression to be beautified
-      # @return [String] Pretty printed MAQL expression
-      def pretty_print(expression, opts = { client: GoodData.connection, project: GoodData.project })
-        temp = expression.dup
-        pairs = get_uris(expression).pmap do |uri|
-          if uri =~ /elements/
+      # Takes a list of uris and turns them to readable representation. If it is an element
+      # it searches for that element. If it is an attribute/fact/metric it returns its title.
+      # If the object cannot be found it is superseded by a "(empty value)" or "(unknown object)"
+      #
+      # @param [Array<String>] vals Input collection of uris.
+      # @param [Hash] opts
+      # @option opts [String] :cache You can provide the cache so the value is not redownloaded if present.
+      # @option opts [String] :project Project in which to search for the values
+      # @return [Hash] The hash containing pairs of URI and translated value
+      def find_values(vals, opts = {})
+        _, project = GoodData.get_client_and_project(opts)
+        cache = opts[:cache] || {}
+        pairs = vals.pmap do |uri|
+          if cache.key?(uri)
+             [uri, cache[uri]]
+          elsif uri =~ /elements/
             begin
-              [uri, Attribute.find_element_value(uri, opts)]
+              [uri, Attribute.find_element_value(uri, project: project)]
             rescue AttributeElementNotFound
               [uri, '(empty value)']
             end
           else
-            [uri, GoodData::MdObject[uri, opts].title]
+            begin
+              [uri, GoodData::MdObject[uri, opts].title]
+            rescue AttributeElementNotFound
+              [uri, '(unknown object)']
+            end
           end
         end
-        pairs.each do |el|
+        Hash[*pairs.flatten].merge(cache)
+      end
+
+      # Takes a MAQL expression and hash of key vals and interpolate the keys for the values
+      # This is used to turn MAQL to human readable expressions.
+      #
+      # @param [String] expressions MAQL expression to be interpolated.
+      # @param [Hash] dict Dictionary of key value values to be interpolated.
+      # @return [String] Interpolated MAQL expression.
+      def interpolate_expression(expression, dict)
+        temp = expression.dup
+        dict.each do |el|
           uri = el[0]
           obj = el[1]
-          temp.sub!(uri, obj)
+          temp.sub!("[#{uri}]" , "[#{obj}]")
         end
         temp
+      end
+
+      # Pretty prints the MAQL expression. This basically means it finds out names of objects and elements and print their values instead of URIs.
+      # @param expression [String] Expression to be beautified
+      # @param [Hash] opts
+      # @option opts [String] :cache You can provide the cache so the value is not redownloaded if present.
+      # @option opts [String] :project Project in which to search for the values
+      # @return [String] Pretty printed MAQL expression
+      def pretty_print(expression, opts = {})
+        interpolate_expression(expression, find_values(get_uris(expression), opts))
       end
 
       def interpolate(values, dictionaries)

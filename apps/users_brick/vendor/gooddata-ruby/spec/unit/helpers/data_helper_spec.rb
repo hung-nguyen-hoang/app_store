@@ -62,3 +62,27 @@ describe GoodData::Helpers::DataSource do
     end.to raise_exception 'Key "key" is missing in S3 datasource'
   end
 end
+
+
+describe GoodData::Helpers::DataSource do
+  it 'should be able to handle params' do
+    query = 'SELECT foo FROM stuff WHERE bar = ${param_1}'
+    params = { 'param_1' => 'some_id'}
+    expect(GoodData::Helpers::DataSource.interpolate_sql_params(query, params)).to eq 'SELECT foo FROM stuff WHERE bar = some_id'
+  end
+
+  it 'should be able to handle multiple params' do
+    query = 'SELECT foo FROM stuff WHERE bar = "${param_1}" AND baz = "${param_2}"'
+    params = {
+      'param_1' => 'some_id',
+      'param_2' => 'other_id'
+    }
+    expect(GoodData::Helpers::DataSource.interpolate_sql_params(query, params)).to eq 'SELECT foo FROM stuff WHERE bar = "some_id" AND baz = "other_id"'
+  end
+
+  it 'should throw an error if you are trying to use param that does not exist' do
+    query = 'SELECT foo FROM stuff WHERE bar = "${nonexistent_param}"'
+    expect { GoodData::Helpers::DataSource.interpolate_sql_params(query, {}) }.to raise_error('Param nonexistent_param is not present in schedule params yet it is expected to be interpolated in the query')
+    
+  end
+end

@@ -12,12 +12,7 @@ require_relative 'metadata'
 module GoodData
   # Metric representation
   class Metric < MdObject
-    include GoodData::Mixin::Lockable
-
-    alias_method :to_hash, :json
-
-    include GoodData::Mixin::RestResource
-    root_key :metric
+    include Mixin::Lockable
 
     class << self
       # Method intended to get all objects of that type in a specified project
@@ -34,14 +29,7 @@ module GoodData
       end
 
       def create(metric, options = { :client => GoodData.connection, :project => GoodData.project })
-        client = options[:client]
-        fail ArgumentError, 'No :client specified' if client.nil?
-
-        p = options[:project]
-        fail ArgumentError, 'No :project specified' if p.nil?
-
-        project = GoodData::Project[p, options]
-        fail ArgumentError, 'Wrong :project specified' if project.nil?
+        client, project = GoodData.get_client_and_project(options)
 
         if metric.is_a?(String)
           expression = metric || options[:expression]
@@ -119,14 +107,7 @@ module GoodData
       end
 
       def xexecute(expression, opts = { :client => GoodData.connection, :project => GoodData.project })
-        client = opts[:client]
-        fail ArgumentError, 'No :client specified' if client.nil?
-
-        p = opts[:project]
-        fail ArgumentError, 'No :project specified' if p.nil?
-
-        project = GoodData::Project[p, opts]
-        fail ArgumentError, 'Wrong :project specified' if project.nil?
+        GoodData.get_client_and_project(opts)
 
         execute(expression, opts.merge(:extended_notation => true))
       end
@@ -141,12 +122,28 @@ module GoodData
       res.data[0][0] if res && !res.empty?
     end
 
+    # Scans the provided metric's MAQL and returns Array of all the URIs included in the MAQL. This basically returns anything that is enclosed in square brackets []
+    # @return [Array<String>] List of URIs
+    def get_uris
+      GoodData::SmallGoodZilla.get_uris(expression)
+    end
+
     def expression
       content['expression']
     end
 
     def expression=(value)
       content['expression'] = value
+    end
+
+    # Method scans for URIs and finds the translation in human readable language. For details find method 
+    # of the same name in module GoodData::SmallGoodZilla
+    #
+    # @param [Hash] opts the options to create a message with.
+    # @option opts [String] :cache If provided the values are taken from cache if present
+    # @return [Hash] Pairs of URIs human readable language
+    def find_values(opts = {})
+      SmallGoodZilla.find_values(get_uris, {client: client, project: project}.merge(opts))
     end
 
     def validate
@@ -210,8 +207,8 @@ module GoodData
 
     # Looks up the readable values of the objects used inside of MAQL epxpressions. Labels and elements titles are based on the primary label.
     # @return [String] Ther resulting MAQL like expression
-    def pretty_expression
-      SmallGoodZilla.pretty_print(expression, client: client, project: project)
+    def pretty_expression(options = {})
+      SmallGoodZilla.pretty_print(expression, { client: client, project: project }.merge(options))
     end
   end
 end

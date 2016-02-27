@@ -9,6 +9,7 @@ require_relative 'dashboard/filter_item'
 require_relative 'dashboard/report_item'
 
 require_relative '../../core/core'
+require_relative '../../helpers/global_helpers'
 require_relative '../metadata'
 require_relative 'metadata'
 require_relative 'report'
@@ -17,9 +18,29 @@ require 'multi_json'
 
 module GoodData
   class Dashboard < GoodData::MdObject
-    root_key :projectDashboard
+    include Mixin::Lockable
 
-    include GoodData::Mixin::Lockable
+    EMPTY_OBJECT = {
+      'projectDashboard' => {
+        'content' => {
+          'tabs' => [],
+          'filters' => []
+        },
+        'meta' => {
+          'tags' => '',
+          'summary' => '',
+          'title' => ''
+        }
+      }
+    }
+
+    ASSIGNABLE_MEMBERS = [
+      :filters,
+      :tabs,
+      :tags,
+      :summary,
+      :title
+    ]
 
     class << self
       # Method intended to get all objects of that type in a specified project
@@ -31,84 +52,19 @@ module GoodData
         query('projectDashboard', Dashboard, options)
       end
 
-      def create_report_tab(tab, options = { :client => GoodData.client, :project => GoodData.project })
-        title = tab[:title]
-        {
-          :title => title,
-          :items => tab[:items].map { |i| GoodData::Dashboard.create_report_tab_item(i, options) }
-        }
-      end
+      def create(dashboard = {}, options = { :client => GoodData.client, :project => GoodData.project })
+        client, project = GoodData.get_client_and_project(options)
 
-      def create_report_tab_item(item, options = { :client => GoodData.client, :project => GoodData.project })
-        title = item[:title]
-
-        report = GoodData::Report.find_first_by_title(title, options)
-        {
-          :reportItem => {
-            :obj => report.uri,
-            :sizeY => item[:size_y] || 200,
-            :sizeX => item[:size_x] || 300,
-            :style => {
-              :displayTitle => 1,
-              :background => {
-                :opacity => 0
-              }
-            },
-            :visualization => {
-              :grid => {
-                :columnWidths => []
-              },
-              :oneNumber => {
-                :labels => {}
-              }
-            },
-            :positionY => item[:position_y] || 0,
-            :filters => [],
-            :positionX => item[:position_x] || 0
-          }
-        }
-      end
-
-      def create(dashboard = { :tabs => [] }, options = { :client => GoodData.client, :project => GoodData.project })
-        client = options[:client]
-        fail ArgumentError, 'No :client specified' if client.nil?
-
-        p = options[:project]
-        fail ArgumentError, 'No :project specified' if p.nil?
-
-        project = GoodData::Project[p, options]
-        fail ArgumentError, 'Wrong :project specified' if project.nil?
-
-        tabs = dashboard[:tabs] || []
-
-        stuff = {
-          'projectDashboard' => {
-            'content' => {
-              'tabs' => tabs.map { |t| GoodData::Dashboard.create_report_tab(t, options) },
-              'filters' => []
-            },
-            'meta' => {
-              'tags' => dashboard[:tags],
-              'summary' => dashboard[:summary],
-              'title' => dashboard[:title]
-            }
-          }
-        }
-
-        client.create(Dashboard, stuff, :project => project)
+        res = client.create(Dashboard, GoodData::Helpers.deep_dup(GoodData::Helpers.deep_stringify_keys(EMPTY_OBJECT)), :project => project)
+        dashboard.each do |k, v|
+          res.send("#{k}=", v) if ASSIGNABLE_MEMBERS.include? k
+        end
+        res
       end
     end
 
     def add_tab(tab)
-      title = tab[:title] || 'Default Tab Title'
-      items = tab[:items] || []
-
-      new_tab_json = {
-        :title => title,
-        :items => items.map { |i| GoodData::Dashboard.create_report_tab_item(i, options) }
-      }
-
-      new_tab = GoodData::DashboardTab.new(self, GoodData::Helpers.deep_stringify_keys(new_tab_json))
+      new_tab = GoodData::DashboardTab.create(self, tab)
       content['tabs'] << new_tab.json
       new_tab
     end
@@ -131,7 +87,7 @@ module GoodData
 
     # Method used for replacing values in their state according to mapping. Can be used to replace any values but it is typically used to replace the URIs. Returns a new object of the same type.
     #
-    # @param [Array<Array>]Mapping specifying what should be exchanged for what. As mapping should be used output of GoodData::Helpers.prepare_mapping.
+    # @param [Array<Array>] Mapping specifying what should be exchanged for what. As mapping should be used output of GoodData::Helpers.prepare_mapping.
     # @return [GoodData::Dashboard]
     def replace(mapping)
       x = GoodData::MdObject.replace_quoted(self, mapping)
@@ -139,9 +95,18 @@ module GoodData
       GoodData::MdObject.replace_quoted(x, vals)
     end
 
-    def tabs
-      content['tabs'].map do |tab|
+    # Method returns the tabs of a dashboard.
+    #
+    # @param identifier [String] Identifier of a tab. If specified method returnes that tab if found. If not specified it returns all tabs of the dashboard.
+    # @return [Array<DashboardTab> | DashboardTab]
+    def tabs(identifier = :all)
+      all = content['tabs'].map do |tab|
         GoodData::DashboardTab.new(self, tab)
+      end
+      if identifier == :all
+        all
+      else
+        all.find { |t| t.identifier == identifier }
       end
     end
 

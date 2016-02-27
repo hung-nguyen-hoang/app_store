@@ -13,6 +13,17 @@ module GoodData
     class DataSource
       attr_reader :realized
 
+      class << self
+        def interpolate_sql_params(query, params)
+          keys = query.scan(/\$\{([^\{]+)\}/).flatten
+          keys.reduce(query) do |a, e|
+            key = e
+            fail "Param #{key} is not present in schedule params yet it is expected to be interpolated in the query" unless params.key?(key)
+            a.gsub("${#{key}}", params[key])
+          end
+        end
+      end
+
       def initialize(opts = {})
         opts = opts.is_a?(String) ? { type: :staging, path: opts } : opts
         opts = GoodData::Helpers.symbolize_keys(opts)
@@ -45,7 +56,7 @@ module GoodData
       private
 
       def realize_query(params)
-        query = @options[:query]
+        query = interpolate_sql_params(@options[:query], params)
         dwh = params['ads_client']
         fail "Data Source needs a client to ads to be able to query the storage but 'ads_client' is empty." unless dwh
         filename = Digest::SHA256.new.hexdigest(query)
