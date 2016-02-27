@@ -56,7 +56,7 @@ module GoodData
       private
 
       def realize_query(params)
-        query = interpolate_sql_params(@options[:query], params)
+        query = DataSource.interpolate_sql_params(@options[:query], params)
         dwh = params['ads_client']
         fail "Data Source needs a client to ads to be able to query the storage but 'ads_client' is empty." unless dwh
         filename = Digest::SHA256.new.hexdigest(query)
