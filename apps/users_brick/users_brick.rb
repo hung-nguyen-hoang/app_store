@@ -9,7 +9,7 @@ module GoodData
     # Brick handling addition users to project
     #
     class UsersBrick < GoodData::Bricks::Brick
-      MODES = %w(add_to_organization sync_project sync_domain_and_project sync_multiple_projects_based_on_pid sync_one_project_based_on_pid sync_one_project_based_on_custom_id)
+      MODES = %w(add_to_organization sync_project sync_domain_and_project sync_multiple_projects_based_on_pid sync_one_project_based_on_pid sync_one_project_based_on_custom_id sync_multiple_projects_based_on_custom_id)
 
       def version
         '0.0.1'
@@ -93,6 +93,31 @@ module GoodData
                   when 'sync_multiple_projects_based_on_pid'
                     new_users.group_by { |u| u[:pid] }.flat_map do |project_id, users|
                       begin
+                        project = client.projects(project_id)
+                        fail "You (user executing the script - #{client.user.login}) is not admin in project \"#{project_id}\"." unless project.am_i_admin?
+                        project.import_users(users, domain: domain, whitelists: whitelists, ignore_failures: ignore_failures)
+                      rescue RestClient::ResourceNotFound
+                        fail "Project \"#{project_id}\" was not found. Please check your project ids in the source file"
+                      rescue RestClient::Gone
+                        fail "Seems like you (user executing the script - #{client.user.login}) do not have access to project \"#{project_id}\""
+                      end
+                    end
+                  when 'sync_multiple_projects_based_on_custom_id'
+                    cids = client.projects.reduce({}) do |a, e|
+                      begin
+                        md = e.metadata
+                        a[md['GOODOT_CUSTOM_PROJECT_ID']] = e.pid if md.key?('GOODOT_CUSTOM_PROJECT_ID')
+                      rescue RestClient::Forbidden
+                        
+                      end
+                      a
+                    end
+                    
+                    new_users.group_by { |u| u[:pid] }.flat_map do |project_cid, users|
+                      begin
+                        project_id = cids[project_cid]
+                        message = "Project \"#{project_id}\" metadata does not contain key GOODOT_CUSTOM_PROJECT_ID. We are unable to get the value to filter users."
+                        fail message unless project_id
                         project = client.projects(project_id)
                         fail "You (user executing the script - #{client.user.login}) is not admin in project \"#{project_id}\"." unless project.am_i_admin?
                         project.import_users(users, domain: domain, whitelists: whitelists, ignore_failures: ignore_failures)

@@ -196,6 +196,25 @@ This mode is meant for cases where a person is by hand managing small number of 
       "whitelists" : ["etl_admin@gooddata.com"]
     }
 
+
+### Sync many projects in one process based on Customer ID
+This is very similar to previous case but in this case you do not want to filter based on project id but on custom id. The custom id is set up on the project in metadata storage under key GOODOT_CUSTOM_PROJECT_ID.
+
+
+![One to many sync in one process](https://www.dropbox.com/s/dxok260opv7jy3r/project_sync_mode_on_to_many.png?dl=0&raw=1)
+
+This mode is meant for cases where a person is by hand managing number of projects so having one process distributing the users allows him to have more manageable ETL. The syncs in project happen serially so the limitation is the max time the process can run.
+
+#### Deployment parameters
+
+	  {
+	    "sync_mode": "sync_multiple_projects_based_on_custom_id",
+	    "organization": "organization_name",
+      "input_source": "source_file",
+      "multiple_projects_column" : "cid",
+      "whitelists" : ["etl_admin@gooddata.com"]
+    }
+
 ### Sync one project with filtering based on project Id
 In many cases you want the same thing as in previous case. You have one source of data and you would like to each project to use just a subset. It is incovenient to prepare N different data files or N tables. How this mode differs from the previous mode is that each proejct has one process deployed and the process is responsible for filtering the data for that particular project and update just that one project (as opposed to update all projects in the previous case).
 
@@ -253,6 +272,7 @@ The following list contains the properties that are useful to specify for updati
 * SSO Provider - sso_provider (sso_provider_column)
 * Project ID - project_id (multiple_projects_column)
 * Authentication modes - authentication_modes (authentication_modes_column)
+* Project ID or custom ID column = project_id (multiple_projects_column)
 
 For instance, if in your data first names would be stored in a column called "x", you would pass as param something along the lines of
 

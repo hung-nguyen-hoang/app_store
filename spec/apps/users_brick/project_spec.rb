@@ -27,8 +27,8 @@ describe GoodData::Bricks::UsersBrick do
   end
 
   after(:all) do
-    # @project_1 && @project_1.delete
-    # @project_2 && @project_2.delete
+    @project_1 && @project_1.delete
+    @project_2 && @project_2.delete
   end
 
   it 'should be able to add users to domain with mode and SSO' do
@@ -277,6 +277,45 @@ describe GoodData::Bricks::UsersBrick do
     end
   end
 
+  it 'should be able to add users to multiple projects based on cid' do
+    users = @domain.users.to_a.sample(10)
+    headers = [:cid, :first_name, :last_name, :login, :password, :email, :role, :sso_provider]
+    projects = [@project_1, @project_2]
+    project_cids = [[@project_1, 'project_1_cid'], [@project_2, 'project_2_cid']]
+
+    project_cids.peach { |p, cid| p.set_metadata('GOODOT_CUSTOM_PROJECT_ID', cid)}
+
+    users_data = users.map do |u|
+      sample = project_cids.sample
+      u.to_hash.merge(pid: sample.first.pid, cid: sample.last, role: ['admin', 'editor'].sample)
+    end
+    begin
+      tempfile = Tempfile.new('sync_multiple_projects_based_on_custom_id')
+      CSV.open(tempfile.path, 'w') do |csv|
+        csv << headers
+        users_data.each do |u|
+          csv << u.values_at(*headers)
+        end
+      end
+
+      @project_2.upload_file(tempfile.path)
+      user_process = @project_2.deploy_process(Pathname.new(APP_STORE_ROOT) + 'apps/users_brick', name: 'users_brick_example', type: :ruby)
+      user_process.execute('main.rb', params: {
+        'domain'        => @domain.name,
+        'input_source'  => Pathname(tempfile.path).basename.to_s,
+        'sync_mode'     => 'sync_multiple_projects_based_on_custom_id',
+        'multiple_projects_column' => 'cid'
+      })
+
+      test_data = users_data.group_by { |u| u[:pid] }.map { |pid, u| [pid, u.count] }
+      test_data.each do |pid, count|
+        expect(@client.projects(pid).users.count).to eq (count + 1)
+      end
+    ensure
+      tempfile.unlink
+    end
+  end
+
   it 'should be able to add users to multiple projects through per project ETL' do
     users = @domain.users.to_a.sample(10)
     headers = [:pid, :first_name, :last_name, :login, :password, :email, :role, :sso_provider]
@@ -302,7 +341,7 @@ describe GoodData::Bricks::UsersBrick do
         })
       end      
 
-      test_data = users_data.group_by { |u| u[:pid] }.map { |pid, u| [pid, u.count] }
+      test_data = users_data.group_by { |u| u[:cid] }.map { |pid, u| [pid, u.count] }
       test_data.each do |pid, count|
         expect(@client.projects(pid).users.count).to eq (count + 1)
       end
