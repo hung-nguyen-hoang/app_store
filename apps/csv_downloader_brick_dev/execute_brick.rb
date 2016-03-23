@@ -8,7 +8,7 @@ module GoodData::Bricks
       metadata = params["metadata_wrapper"]
       downloader = params["csv_downloader_wrapper"]
       raise Exception, "The schedule parameters must contain ID of the downloader" if !params.include?("ID")
-      metadata.set_source_context(params["ID"], {}, downloader)
+      metadata.set_source_context(params["ID"], {}, downloader,true)
       downloader.connect
       downloader.load_data_structure_file
       downloader.number_of_manifest_in_one_run.times do |i|

@@ -1,7 +1,7 @@
 PATH
   remote: gooddata_connectors_ads-by_reference_architecture
   specs:
-    gooddata_connectors_ads (0.0.10)
+    gooddata_connectors_ads (0.0.12)
       erubis
       gooddata-dss-jdbc
       hashie
@@ -19,7 +19,7 @@ PATH
 PATH
   remote: gooddata_connectors_metadata-bds_implementation_devel
   specs:
-    gooddata_connectors_metadata (0.0.7)
+    gooddata_connectors_metadata (0.0.8)
       aws-sdk
       gooddata (~> 0.6, >= 0.6.12)
       hashie (~> 3.3, >= 3.3.2)
@@ -104,7 +104,7 @@ GEM
     salesforce_bulk_query (0.2.0)
       json (~> 1.8)
       xml-simple (~> 1.1)
-    sequel (4.31.0)
+    sequel (4.32.0)
     slop (3.6.0)
     spoon (0.0.4)
       ffi
