@@ -4,8 +4,10 @@
 # This source code is licensed under the BSD-style license found in the
 # LICENSE file in the root directory of this source tree.
 
+require 'base64'
 require 'pathname'
 require 'hashie'
+require 'openssl'
 
 require_relative 'global_helpers_params'
 
@@ -242,6 +244,10 @@ module GoodData
         end
       end
 
+      def parse_http_exception(e)
+        JSON.parse(e.response)
+      end
+
       # Creates a matrix with zeroes in all places. It is implemented as an Array of Arrays. First rows then columns.
       #
       # @param [Integer] m Number of rows
@@ -251,6 +257,73 @@ module GoodData
       def zeroes(m, n, val = 0)
         m.times.map { n.times.map { val } }
       end
+
+      # Turns a boolean or string 'true' into boolean. Useful for bricks.
+      #
+      # @param [Object] Something
+      # @return [Boolean] Returns true or false if the input is 'true' or true
+      def to_boolean(param)
+        (param == 'true' || param == true) ? true : false
+      end
+
+      # encrypts data with the given key. returns a binary data with the
+      # unhashed random iv in the first 16 bytes
+      def encrypt(data, key)
+        cipher = OpenSSL::Cipher::Cipher.new('aes-256-cbc')
+        cipher.encrypt
+        cipher.key = key = Digest::SHA256.digest(key)
+        random_iv = cipher.random_iv
+        cipher.iv = Digest::SHA256.digest(random_iv + key)[0..15]
+        encrypted = cipher.update(data)
+        encrypted << cipher.final
+        # add unhashed iv to front of encrypted data
+
+        Base64.encode64(random_iv + encrypted)
+      end
+
+      def decrypt(data_base_64, key)
+        return '' if key.nil? || key.empty?
+
+        data = Base64.decode64(data_base_64)
+
+        cipher = OpenSSL::Cipher::Cipher.new('aes-256-cbc')
+        cipher.decrypt
+        cipher.key = cipher_key = Digest::SHA256.digest(key)
+        random_iv = data[0..15] # extract iv from first 16 bytes
+        data = data[16..data.size - 1]
+        cipher.iv = Digest::SHA256.digest(random_iv + cipher_key)[0..15]
+        begin
+          decrypted = cipher.update(data)
+          decrypted << cipher.final
+        rescue
+          puts 'Error'
+          return nil
+        end
+
+        decrypted
+      end
+    end
+  end
+
+  class << self
+    def get_client(opts)
+      client = opts[:client]
+      fail ArgumentError, 'No :client specified' if client.nil?
+
+      client
+    end
+
+    def get_client_and_project(opts)
+      client = opts[:client]
+      fail ArgumentError, 'No :client specified' if client.nil?
+
+      p = opts[:project]
+      fail ArgumentError, 'No :project specified' if p.nil?
+
+      project = GoodData::Project[p, opts]
+      fail ArgumentError, 'Wrong :project specified' if project.nil?
+
+      [client, project]
     end
   end
 end

@@ -268,4 +268,31 @@ describe "Full process and schedule exercise", :constraint => 'slow' do
       process1 && process1.delete
     end
   end
+
+  it 'should be able to deploy from app_store' do
+    begin
+      process = @project.deploy_process('https://github.com/gooddata/app_store/tree/sfdc_downloader_brick-v0.0.4/apps/ads_integrator_brick')
+      expect(process.class).to eql(GoodData::Process)
+    ensure
+      process.delete
+    end
+  end
+
+
+  it 'should be able to clone with etl' do
+    begin
+      # Deploy two schedules
+      process = @project.processes.first
+      schedule_first = process.create_schedule('0 15 27 7 *', process.executables.first)
+      schedule_second = process.create_schedule('0 15 27 8 *', process.executables.first)
+      cloned_project = GoodData::Project.clone_with_etl(@project)
+      a = @project.processes.flat_map {|p| p.schedules.map {|s| [p.name, s.name]}}
+      b = cloned_project.processes.flat_map {|p| p.schedules.map {|s| [p.name, s.name]}}
+      expect(a).to eq b
+    ensure
+      cloned_project && cloned_project.delete
+      schedule_first && schedule_first.delete
+      schedule_second && schedule_second.delete
+    end
+  end
 end

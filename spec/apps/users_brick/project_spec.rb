@@ -44,9 +44,10 @@ describe GoodData::Bricks::UsersBrick do
       @project_1.upload_file(tempfile.path)
       user_process = @project_1.deploy_process(Pathname.new(APP_STORE_ROOT) + 'apps/users_brick', name: 'users_brick_example', type: :ruby)
       user_process.execute('main.rb', params: {
-        'domain'        => @domain.name,
-        'input_source'  => Pathname(tempfile.path).basename.to_s,
-        'sync_mode'     => 'add_to_organization'
+        'domain'          => @domain.name,
+        'input_source'    => Pathname(tempfile.path).basename.to_s,
+        'sync_mode'       => 'add_to_organization',
+        'GDC_LOGGING_OFF' => 'true'
       })
     ensure
       tempfile.unlink
@@ -194,12 +195,12 @@ describe GoodData::Bricks::UsersBrick do
 
         user_process = @project_1.deploy_process(Pathname.new(APP_STORE_ROOT) + 'apps/users_brick', name: 'users_brick_example', type: :ruby)
 
-
         # Users should be added
         result1 = user_process.execute('main.rb', params: {
-          'domain'        => @domain.name,
-          'input_source'  => Pathname(tempfile.path).basename.to_s,
-          'sync_mode'     => 'sync_project'
+          'domain'          => @domain.name,
+          'input_source'    => Pathname(tempfile.path).basename.to_s,
+          'sync_mode'       => 'sync_project',
+          'GDC_LOGGING_OFF' => 'true'
         })
         users = @project_1.users
         expect(users.count).to eq 11
@@ -212,10 +213,11 @@ describe GoodData::Bricks::UsersBrick do
         user = (@project_1.users.to_a - [@client.user]).sample
         user.disable
         result2 =user_process.execute('main.rb', params: {
-          'domain'        => @domain.name,
-          'input_source'  => Pathname(tempfile.path).basename.to_s,
-          'sync_mode'     => 'sync_project',
-          'whitelists'   => [user.login]
+          'domain'          => @domain.name,
+          'input_source'    => Pathname(tempfile.path).basename.to_s,
+          'sync_mode'       => 'sync_project',
+          'whitelists'      => [user.login],
+          'GDC_LOGGING_OFF' => 'true'
         })
         expect(@project_1.users.count).to eq 10
 
@@ -300,11 +302,13 @@ describe GoodData::Bricks::UsersBrick do
 
       @project_2.upload_file(tempfile.path)
       user_process = @project_2.deploy_process(Pathname.new(APP_STORE_ROOT) + 'apps/users_brick', name: 'users_brick_example', type: :ruby)
-      user_process.execute('main.rb', params: {
+
+      execution = user_process.execute('main.rb', params: {
         'domain'        => @domain.name,
         'input_source'  => Pathname(tempfile.path).basename.to_s,
         'sync_mode'     => 'sync_multiple_projects_based_on_custom_id',
-        'multiple_projects_column' => 'cid'
+        'multiple_projects_column' => 'cid',
+        'GDC_LOGGING_OFF' => 'true'
       })
 
       test_data = users_data.group_by { |u| u[:pid] }.map { |pid, u| [pid, u.count] }
@@ -341,7 +345,7 @@ describe GoodData::Bricks::UsersBrick do
         })
       end      
 
-      test_data = users_data.group_by { |u| u[:cid] }.map { |pid, u| [pid, u.count] }
+      test_data = users_data.group_by { |u| u[:pid] }.map { |pid, u| [pid, u.count] }
       test_data.each do |pid, count|
         expect(@client.projects(pid).users.count).to eq (count + 1)
       end

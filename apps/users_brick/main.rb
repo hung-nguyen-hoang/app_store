@@ -1,6 +1,12 @@
 # encoding: utf-8
+params = $SCRIPT_PARAMS.to_hash
+
 require 'bundler/cli'
-Bundler::CLI.new.invoke(:install, [], path: 'gems', verbose: true, :retry => 3, :jobs => 4)
+verbose_bundler = params['VERBOSE_BUNDLER'] == 'true' ? true : false
+bundler_opts = verbose_bundler ? { verbose: true } : { quiet: true }
+bundler_default_opts = { path: 'gems', :retry => 3, :jobs => 4 }
+
+Bundler::CLI.new.invoke(:install, [], bundler_default_opts.merge(bundler_opts))
 require 'bundler/setup'
 require 'gooddata'
 
@@ -19,4 +25,4 @@ p = GoodData::Bricks::Pipeline.prepare([
   FsProjectUploadMiddleware.new(:destination => :staging),
   UsersBrick])
 
-p.call($SCRIPT_PARAMS.to_hash)
+p.call(params)

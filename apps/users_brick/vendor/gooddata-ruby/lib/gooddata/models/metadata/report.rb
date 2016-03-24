@@ -9,9 +9,7 @@ require_relative 'metadata'
 
 module GoodData
   class Report < GoodData::MdObject
-    root_key :report
-
-    include GoodData::Mixin::Lockable
+    include Mixin::Lockable
 
     class << self
       # Method intended to get all objects of that type in a specified project
@@ -24,14 +22,7 @@ module GoodData
       end
 
       def create(options = { :client => GoodData.connection, :project => GoodData.project })
-        client = options[:client]
-        fail ArgumentError, 'No :client specified' if client.nil?
-
-        p = options[:project]
-        fail ArgumentError, 'No :project specified' if p.nil?
-
-        project = client.projects(p)
-        fail ArgumentError, 'Wrong :project specified' if project.nil?
+        client, project = GoodData.get_client_and_project(options)
 
         title = options[:title]
         fail 'Report needs a title specified' unless title

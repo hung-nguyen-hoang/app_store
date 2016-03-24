@@ -6,6 +6,7 @@
 
 require 'pry'
 require 'zip'
+require 'uri'
 
 require_relative '../helpers/global_helpers'
 require_relative '../rest/resource'
@@ -13,8 +14,10 @@ require_relative '../rest/resource'
 require_relative 'execution_detail'
 require_relative 'schedule'
 
+APP_STORE_URL ||= 'https://github.com/gooddata/app_store'
+
 module GoodData
-  class Process < GoodData::Rest::Object
+  class Process < Rest::Resource
     attr_reader :data
 
     alias_method :raw_data, :data
@@ -56,14 +59,7 @@ module GoodData
       end
 
       def with_deploy(dir, options = {}, &block)
-        client = options[:client]
-        fail ArgumentError, 'No :client specified' if client.nil?
-
-        p = options[:project]
-        fail ArgumentError, 'No :project specified' if p.nil?
-
-        project = GoodData::Project[p, options]
-        fail ArgumentError, 'Wrong :project specified' if project.nil?
+        _client, project = GoodData.get_client_and_project(options)
 
         GoodData.with_project(project) do
           params = options[:params].nil? ? [] : [options[:params]]
@@ -83,15 +79,7 @@ module GoodData
       end
 
       def upload_package(path, files_to_exclude, opts = { :client => GoodData.connection })
-        client = opts[:client]
-        fail ArgumentError, 'No :client specified' if client.nil?
-
-        p = opts[:project]
-        fail ArgumentError, 'No :project specified' if p.nil?
-
-        project = GoodData::Project[p, opts]
-        fail ArgumentError, 'Wrong :project specified' if project.nil?
-
+        GoodData.get_client_and_project(opts)
         zip_and_upload(path, files_to_exclude, opts)
       end
 
@@ -104,14 +92,9 @@ module GoodData
       # @option options [String] :process_id ID of a process to be redeployed (do not set if you want to create a new process)
       # @option options [Boolean] :verbose (false) Switch on verbose mode for detailed logging
       def deploy(path, options = { :client => GoodData.client, :project => GoodData.project })
-        client = options[:client]
-        fail ArgumentError, 'No :client specified' if client.nil?
+        client, project = GoodData.get_client_and_project(options)
 
-        p = options[:project]
-        fail ArgumentError, 'No :project specified' if p.nil?
-
-        project = GoodData::Project[p, options]
-        fail ArgumentError, 'No :project specified' if project.nil?
+        return deploy_brick(path, options) if path.to_s.start_with?(APP_STORE_URL)
 
         path = Pathname(path) || fail('Path is not specified')
         files_to_exclude = options[:files_to_exclude].nil? ? [] : options[:files_to_exclude].map { |pname| Pathname(pname) }
@@ -139,9 +122,47 @@ module GoodData
                 client.put("/gdc/projects/#{project.pid}/dataload/processes/#{process_id}", data)
               end
 
-        process = client.create(Process, res, project: p)
+        process = client.create(Process, res, project: project)
         puts HighLine.color("Deploy DONE #{path}", HighLine::GREEN) if verbose
         process
+      end
+
+      def deploy_brick(path, options = { :client => GoodData.client, :project => GoodData.project })
+        client, project = GoodData.get_client_and_project(options)
+
+        brick_uri_parts = URI(path).path.split('/')
+        ref = brick_uri_parts[4]
+        brick_name = brick_uri_parts.last
+        brick_path = brick_uri_parts[5..-1].join('/')
+
+        Dir.mktmpdir do |dir|
+          Dir.chdir(dir) do
+            `git clone #{APP_STORE_URL}`
+          end
+
+          Dir.chdir(File.join(dir, 'app_store')) do
+            if ref
+              `git checkout #{ref}`
+
+              fail 'Wrong branch or tag specified!' if $CHILD_STATUS.to_i != 0
+            end
+
+            opts = {
+              :client => client,
+              :project => project,
+              :name => brick_name,
+              :type => 'RUBY'
+            }
+
+            full_brick_path = File.join(dir, 'app_store', brick_path)
+
+            unless File.exist?(full_brick_path)
+              fail "Invalid brick name specified - '#{brick_name}'"
+            end
+
+            return deploy(full_brick_path, opts)
+          end
+        end
       end
 
       # ----------------------------- Private Stuff
@@ -167,10 +188,13 @@ module GoodData
           with_zip(opts) do |zipfile|
             zipfile.add(File.basename(path), path)
           end
-
         elsif !path.directory?
-          client.upload_to_user_webdav(path, opts)
-          path
+          # this branch expects a zipped file. Since the filename on webdav is by default
+          # equal to the filename of a local file. I happened often that the name clashed
+          # if ran in parallel. Create a randomized name to mitigate that
+          randomized_filename = (0...16).map { (65 + rand(26)).chr }.join
+          client.upload_to_user_webdav(path, { filename: randomized_filename }.merge(opts))
+          randomized_filename
         else
           with_zip(opts) do |zipfile|
             files_to_upload = Dir[File.join(path, '**', '**')].reject { |f| files_to_exclude.include?(Pathname(path) + f) }
