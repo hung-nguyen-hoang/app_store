@@ -31,7 +31,7 @@ module GoodData
         end
         
         table = Terminal::Table.new :headings => %w(type status project_id action login roles) do |t|
-          results.sort_by { |r| r[:type] }.each do |r|
+          results.sort_by { |r| r[:type] || :no_type }.each do |r|
             t << [r[:type], r[:status], r[:project_pid] , r[:operation], r[:login], (r[:role_title] || []).join(', ')]
           end
         end
