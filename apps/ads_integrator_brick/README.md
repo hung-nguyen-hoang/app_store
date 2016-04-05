@@ -63,6 +63,11 @@ The deployment configuration for Gooddot could look like this:
 
 After running the Gooddot sync command, you only need to run the schedule on platform
 
+###  Additional schedule parameters
+
+ * **server_side_encryption** (true/false) (default -> false) - this will enable you usage of the BDS with server side encryption enabled. 
+
+
 ## Integration modes
 
 In current version of ASD integrator, there are two possible integration modes.
