@@ -273,7 +273,8 @@ The after you add additional settings to integrator, the files will be downloade
 
 ### One entity in multiple versions
 
-The CSV Downloader is now supporting one entity in multiple version. The downloader will not only use latest version from feed file, but it will store and use all historical version. If you then use the old version in the manifest file, the downloaded will not create the new metaadata file, but it will use the metadata file for this specific version. 
+The CSV Downloader is now supporting one entity in multiple version. The downloader will not only use latest version from feed file, but it will store and use all historical version. If you then use the old version in the manifest file, the downloaded will not create the new matadata file, but it will use the metadata file for this specific version. 
+This can be used in case that the customer have one entity, but export for this entities can slightly differ. 
 
 
 
