@@ -5,12 +5,12 @@ require 'fileutils'
 debug_install = true if !$SCRIPT_PARAMS.nil? and $SCRIPT_PARAMS.include?("DEBUG_INSTALL")
 
 $SCRIPT_PARAMS.each_pair do |key,value|
-  puts "#{key}:#{value}"
+  STDERR.puts "#{key}:#{value}"
 end
 
 postfix = debug_install ? "2>&1": "1>/dev/null"
 
-package = 'https://gdc-ms-ruby-packages.s3.amazonaws.com/csv_downloader_brick/v0.0.2.zip'
+package = 'https://gdc-ms-ruby-packages.s3.amazonaws.com/csv_downloader_brick/v0.0.3.zip'
 system("curl -LOk --retry 3 #{package} #{postfix}")
 
 local_package = package.split('/').last

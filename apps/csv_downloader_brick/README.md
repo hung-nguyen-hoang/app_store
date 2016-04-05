@@ -8,6 +8,15 @@ This part of documentation is covering only the CSV downloader. The overall info
 
 The current version of downloader support data download froM S3 and from SFTP.
 
+## Limits
+
+The limits of the CSV downloader are mostly determined by the limitations of the GoodData Ruby Workers.
+
+### File size
+ 
+The the biggest file size, which can be processed by the CSV downloader is around 2GB (the limit is applicable only if number_of_threads set to 1. With different settings the max file size is number times smaller), but I am strongly recommending to have the files of size around 100MB. The processing of small files is much faster.
+
+
 ## Deployment
 
 The deployment on Ruby Executor infrastructure can be done manually or by the Goodot tool.
@@ -176,6 +185,7 @@ The structure of the configuration file:
  * **manifest_process_type** (move/history) - if set to move, the manifest file will be moved to processed folder. If set to history, the manifest will stay.
  * **number_of_manifest_in_one_run** - maximum number of manifests which is processed in one run. Default value is 1
  * **delete_data_after_processing** (true/false) - if set to TRUE, the data will be delete from the source, after processing. Default FALSE.
+ * **number_of_threads** (1) - this parameter will set how many threads will be used when copying data from source location to the BDS 
  * **ignore_check_sum** (true/false) - this options set to true will ignore the MD5 checksum when downloading the file 
  * **file_structure** - this section of the configuration is dedicated to structure of the file. This hints are need for CSV parsing when loading it to ADS. More information about each of the option can be found in Vertica documentation [link](http://my.vertica.com/docs/6.1.x/HTML/index.htm#1668.htm).
     * **skip_rows** (optional) - number of skipped columns in CSV (used mainly to remove header from CSV file)
@@ -209,6 +219,19 @@ The SFTP has some of the parameters set to constant value (the value cannot be c
 
  * ignore_check_sum -> true
  * number_of_threads -> 1
+ 
+### Explanation of manifest process type parameter
+ 
+ The CSV downloader can work in two mode. The move and history.
+  
+#### Move mode
+  
+  The file is automatically moved to the processed directory. What is important here to say is, that the timestamp of the manifest is used only to decided the order of processing, but it is not checking if the timestamp which you have provide is after or before the files processed in previous run.  
+
+#### History mode
+ 
+ The CSV downloader is checking what manifest were processed previously and determing if there is new manifest in the current location. This aproach is good when you don't have write access to the source location, but it is generally slower, because the CSV downloader need to list all manifest and already processed batches. This mode is also not checking if newly upload manifest timestamp is after last downloader file. The downloader will simply process manifest if it was not processed yet.
+  
 
 ### Manifest option
 
@@ -247,6 +270,11 @@ If you can guarantee that file in source will not be deleted, you can use the li
 download the data from source, but it will create LINK file on BDS with links to the source file. 
 
 The after you add additional settings to integrator, the files will be downloaded from source location directly by integrator.
+
+### One entity in multiple versions
+
+The CSV Downloader is now supporting one entity in multiple version. The downloader will not only use latest version from feed file, but it will store and use all historical version. If you then use the old version in the manifest file, the downloaded will not create the new metaadata file, but it will use the metadata file for this specific version. 
+
 
 
 

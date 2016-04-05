@@ -5,8 +5,8 @@ require 'fileutils'
 fetch_gems = true
 repo_gems = [
   'https://gdc-ms-ruby-packages.s3.amazonaws.com/gooddata_connectors_base/s3.zip',
-  'https://gdc-ms-ruby-packages.s3.amazonaws.com/gooddata_connectors_metadata/v0.0.6.zip',
-  'https://gdc-ms-ruby-packages.s3.amazonaws.com/gooddata_connectors_downloader_csv/v0.0.2.zip'
+  'https://gdc-ms-ruby-packages.s3.amazonaws.com/gooddata_connectors_metadata/v0.0.8.zip',
+  'https://gdc-ms-ruby-packages.s3.amazonaws.com/gooddata_connectors_downloader_csv/v0.0.3.zip'
 ]
 if fetch_gems
   repo_gems.each do |repo_gem|
