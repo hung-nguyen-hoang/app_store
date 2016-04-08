@@ -225,6 +225,7 @@ There is possibility to provide some configuration for ASD integration tool on t
  * **source_projection** (optional) - works only when the finish_in_source parameter is used. This enabled you to create your default projection when creating source tables. If this option is not used, the ASD Integrator is creating projection optimized for data integration.  
     **order_by**  
     **segmented_by** 
+ * **remove_deleted_records** - Records are being actually deleted during integration instead of marked as deleted in _sys_is_deleted system field. 
  * **computed_fields** (options) (collection) - this options is enabling you to create the new field during the data integration to the ADS. The uses for this functionality is, when you want to computed field at the beginning of the process.
     **name** - The name of the field in the specific table. The integrator will automaticaly add **cmp_** prefix before the name of the field  
 	**type** - The type of the field (standard connector framework type definition - string-255,integer, etc) 
