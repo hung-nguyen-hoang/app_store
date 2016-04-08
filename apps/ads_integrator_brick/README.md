@@ -186,6 +186,7 @@ This options are applied right after the configuration change
     * **recreate_source_tables** (optional) (default -> false) - when this option is set to true, the source tables are dropped and recreated in each run. Can be used with option source_projection in entity level configuration.
     * **abort_on_error** (optional) (default -> true) - specify if the copy command is executed with abort_on_error option. If this option is false, the tool will put the errors to exception files and after the execution has finished the files are uploaded to BDS Error folder. Also the tool will fire notification event named "error-in-data-processing". This event can be consumed by notification functionality in DISC console.
     * **ignored_system_fields** (optional) (default -> []) - the list of system fields, which should be ignored by during the integration. The fields will not be created in any tables.
+    * **remove_deleted_records** (optional) (default -> false) - if this parameter is enabled, the records which are marked as deleted will be deleted after each run of the ASD integrator
     * **remote** (optional) - this options must be set, if the linked files need to be processed by this tool. The linked files are described in CSV Downloader Brick documentation.
         * **type** - (s3) - specify the type of the linked file source. Right now only s3 is supported. 
         * **access_key** - specify the access key for the linked file source.
