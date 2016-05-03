@@ -125,6 +125,7 @@ In the PSQL script file, you can define script which returns the list through wh
 
 Please note, if your select statement return two lines with the same key, only the last line will be used.
 
+
 #### Example
 
 Source table - custom_partitions
