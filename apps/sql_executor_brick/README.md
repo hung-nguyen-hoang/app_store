@@ -70,7 +70,7 @@ Subsequent command must contain SQL select statement which returns result set. S
 ### ISQL scripts
 
 ISQL scripts are used for iteration over set of SQL commands. 
-Each script has to start with **/*ITERATION('param_name')*/** construction at the first line. 
+Each script has to start with **/* ITERATION('param_name') */** construction at the first line. 
 Subsequent command(s) is (are) executed for each set of param_name values. Schedule parameters are supported. Detailed info can be found in the next section.
 
 
