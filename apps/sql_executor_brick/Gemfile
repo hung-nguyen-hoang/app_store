@@ -1,0 +1,6 @@
+source 'https://rubygems.org'
+
+gem 'gooddata-dss-jdbc'
+gem 'gooddata-dss-sequel'
+gem 's3'
+gem 'peach'

@@ -1,0 +1,65 @@
+{
+  "name"       : "sql_executor_brick",
+  "version"    : "1.0.0",
+  "category"   : "api_tools",
+  "language"   : "ruby",
+  "tags"       : "ruby sql",
+  "executable" : "main.rb",
+  "description" : "The brick for executing SQL scripts on ADS",
+  "created": "12-04-2016",
+  "is_live"    : true,
+   "author"   : {
+     "name" : "Adrian Toman",
+     "email": "adrian.toman@gooddata.com"
+   },
+  "parameters" : [
+    {
+      "name"        : "ads_server",
+      "description" : "Goddata server. Default: secure.gooddata.com",
+      "type"        : "string",
+      "mandatory"   : false
+    },
+    {
+      "name"        : "ads_instance_id",
+      "description" : "The ID of the ADS instance",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "ads_username",
+      "description" : "ADS username",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "ads_password",
+      "description" : "ADS password",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "folder",
+      "description" : "Folder on S3 which contains the SQL scripts. It must be specified in format s3://bucket/any/custom/folder/",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "access_key",
+      "description" : "Access key to S3",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "secret_key",
+      "description" : "Secret key to S3",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "number_of_threads",
+      "description" : "The parameter specifies how many SQL commands will be executed at parallel. Default: 4",
+      "type"        : "string",
+      "mandatory"   : false
+    }
+  ]
+}
