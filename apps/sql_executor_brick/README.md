@@ -123,7 +123,7 @@ Source table - Settings
 
 In the PSQL script file, you can define script which returns the list through which you can iterate by subsequent SQL. This script must returns key column and any number of columns which are used as parameters in isql script files. 
 
-Please note, if your select statement returns two lines with the same key, only the last line will be used.
+Please note, if your select statement return two lines with the same key, only the last line will be used.
 
 #### Example
 
