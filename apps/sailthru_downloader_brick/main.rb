@@ -63,12 +63,14 @@ $SCRIPT_PARAMS = {} if $SCRIPT_PARAMS.nil?
 # Setup params
 $SCRIPT_PARAMS['GDC_LOGGER'] = Logger.new(STDOUT)
 
-# Delete previous batches from S3
-s3 = AWS::S3.new(:server => 's3.amazonaws.com', :access_key_id => $SCRIPT_PARAMS['bds_access_key'], :secret_access_key => $SCRIPT_PARAMS['bds_secret_key'] )
-bucket = s3.buckets[$SCRIPT_PARAMS['bds_bucket']]
-prefix = [$SCRIPT_PARAMS['bds_folder'],$SCRIPT_PARAMS['account_id'],$SCRIPT_PARAMS['token'],'batches',$SCRIPT_PARAMS['ID']].join("/")
-puts "[SAILTHRU_LOG][INFO] Deleting all files in folder #{prefix}."
-bucket.objects.with_prefix(prefix).delete_all
+# Delete previous batches from S3 (FULL data only)
+if $SCRIPT_PARAMS['MODE'] != 'INCREMENTAL'
+    s3 = AWS::S3.new(:server => 's3.amazonaws.com', :access_key_id => $SCRIPT_PARAMS['bds_access_key'], :secret_access_key => $SCRIPT_PARAMS['bds_secret_key'] )
+    bucket = s3.buckets[$SCRIPT_PARAMS['bds_bucket']]
+    prefix = [$SCRIPT_PARAMS['bds_folder'],$SCRIPT_PARAMS['account_id'],$SCRIPT_PARAMS['token'],'batches',$SCRIPT_PARAMS['ID']].join("/")
+    puts "[SAILTHRU_LOG][INFO] Deleting all files in the folder #{prefix}."
+    bucket.objects.with_prefix(prefix).delete_all
+end
 
 # Execute pipeline
 p.call($SCRIPT_PARAMS)
