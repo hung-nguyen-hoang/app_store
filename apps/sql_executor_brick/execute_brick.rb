@@ -31,12 +31,9 @@ module SqlExecutor
         @password = params['ads_password']
 
         @folder = params['folder']
-        @number_of_threads = Integer(params['number_of_threads'] || '1')
+        @number_of_threads = Integer(params['number_of_threads'] || '4')
 
         @parameters = {}
-
-
-
 
         # Prepare list of parameters to replace in the SQL queries
         @list_of_non_core_parameters = {}
@@ -63,13 +60,13 @@ module SqlExecutor
         execution_list = file_list.group_by do |file_name|
           order_number = file_name.split("_").first
           begin
-            Integer(order_number)
+            Integer(order_number,10)
           rescue
             'invalid'
           end
         end
 
-        fail "Some of the files have invalid structure (#{execution_list['invalid'].join(',')})" if (execution_list.include?('invalid'))
+        fail "Some of the files do not match expected naming structure (#{execution_list['invalid'].join(',')})" if (execution_list.include?('invalid'))
 
         ADSWrapper.set_up(@instance_id,@username,@password,@server)
 
@@ -80,6 +77,7 @@ module SqlExecutor
         execution_list.each_pair do |key,values|
           values.sort_by!{|v| v.split("_")[1..-1].join("_") }
 
+          $log.info "Executing Group #{key}"
           queue = Queue.new
           values.each { |child_task| queue <<  child_task }
           threads = []
@@ -126,7 +124,11 @@ module SqlExecutor
         content = replace_parameters(content,@list_of_non_core_parameters)
         content = replace_key_value_parameters(content)
         $log.info "SQL command: \n#{content}"
-        $log.info "Command #{element} took: " + Benchmark.measure{ADSWrapper.db.run(content)}.real.to_s
+        begin
+          $log.info "Command #{element} took: " + Benchmark.measure{ADSWrapper.db.run(content)}.real.to_s
+        rescue => e
+          raise Exception, "The execution of file #{element} has failed. Message #{e.message}"
+        end
       end
 
       def execute_psql(element,content)
@@ -144,6 +146,7 @@ module SqlExecutor
         content = replace_key_value_parameters(content)
         $log.info "SQL command: \n#{content}"
         $log.info "Parameters loaded to collection #{param_name} are:"
+
         benchmark = Benchmark.measure do
           ADSWrapper.db.fetch(content) do |row|
             hash = {}
@@ -177,10 +180,14 @@ module SqlExecutor
       parameter_values = @parameters[param_name]
 
       parameter_values.peach(threads) do |key,value_hash|
-        sql = content.dup
-        sql = replace_parameters(sql,value_hash)
-        $log.info "SQL command: \n#{sql}"
-        $log.info "Command #{element} took: " + Benchmark.measure{ADSWrapper.db.run(sql)}.real.to_s
+        begin
+          sql = content.dup
+          sql = replace_parameters(sql,value_hash)
+          $log.info "SQL command: \n#{sql}"
+          $log.info "Command #{element} took: " + Benchmark.measure{ADSWrapper.db.run(sql)}.real.to_s
+        rescue => e
+          raise Exception, "The execution of file #{element} has failed. Message #{e.message}"
+        end
       end
     end
 
@@ -222,7 +229,7 @@ module SqlExecutor
     def log_plan(execution_list)
       $log.info 'Execution plan:'
       execution_list.each_pair do |key,value|
-        $log.info "Order: #{key}"
+        $log.info "Group: #{key}"
         value.each do |file|
           $log.info "   File: #{file}"
         end
