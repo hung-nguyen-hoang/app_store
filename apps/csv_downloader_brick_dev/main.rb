@@ -1,12 +1,14 @@
 # encoding: utf-8
 
+puts 'YOU ARE RUNNING ON DEVELOPMENT VERSION OF THE DOWNLOADER. IF YOU ARE USING THIS IN PRODUCTION, MIGRATE TO STABLE VERSION ASAP!!!'
+
 require 'fileutils'
 
 fetch_gems = true
 repo_gems = [
     'https://gdc-ms-ruby-packages.s3.amazonaws.com/gooddata_connectors_base/s3.zip',
-    'https://gdc-ms-ruby-packages.s3.amazonaws.com/gooddata_connectors_metadata/bds_implementation_devel.zip',
-    'https://gdc-ms-ruby-packages.s3.amazonaws.com/gooddata_connectors_downloader_csv/development.zip'
+    'https://gdc-ms-ruby-packages.s3.amazonaws.com/gooddata_connectors_metadata/bds_implementation_devel_validation.zip',
+    'https://gdc-ms-ruby-packages.s3.amazonaws.com/gooddata_connectors_downloader_csv/development_validation.zip'
 ]
 if fetch_gems
   repo_gems.each do |repo_gem|
