@@ -7,7 +7,7 @@ module GoodData::Bricks
       metadata = params['metadata_wrapper']
       ads_wrapper = params['ads_storage_wrapper']
       raise Exception, "The schedule ID parameter need to be filled" if !params.include?("ID")
-      metadata.set_integrator_context(params["ID"])
+      metadata.set_integrator_context(params["ID"],{:integrator_object => ads_wrapper})
       begin
         ads_wrapper.connect
         # Lets check if the ADS gem is in batch mode or in entity mode
