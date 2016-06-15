@@ -1,4 +1,17 @@
 # encoding: utf-8
+
+require 'fileutils'
+
+debug_install = true if !$SCRIPT_PARAMS.nil? and $SCRIPT_PARAMS.include?("DEBUG_INSTALL")
+
+postfix = debug_install ? "2>&1": "1>/dev/null"
+
+package = 'https://gdc-ms-ruby-packages.s3.amazonaws.com/schedule_execution_brick/v0.0.1.zip'
+system("curl -LOk --retry 3 #{package} #{postfix}")
+
+local_package = package.split('/').last
+system("unzip -o #{local_package} #{postfix}")
+
 # Bundler hack
 require 'bundler/cli'
 Bundler::CLI.new.invoke(:install, [],:path => "gems", :retry => 3, :jobs => 4,:deployment => true)
