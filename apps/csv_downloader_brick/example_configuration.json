@@ -1,0 +1,47 @@
+{
+  "entities": {
+    "TestEntity": {
+      "global": {
+        "custom": {
+          "hub":["field1"]
+
+        }
+      }
+    }
+  },"integrators": {
+  "ads_integrator_1": {
+    "type": "ads_storage",
+    "batches":["csv_downloader_1"]
+  }
+},"downloaders":{
+  "csv_downloader_1":{
+    "type":"csv",
+    "entities":["TestEntity"]
+  }
+},
+  "csv": {
+    "type": "s3",
+    "options": {
+      "bucket": "gdc-ms-int",
+      "folder": "path_to_manifests",
+      "data_structure_info": "path_to_feed_file",
+      "access_key": "access_key",
+      "secret_key":"secret_key",
+      "manifest": "manifest-{time(%Y%m%d%H%M%S)}",
+      "manifest_process_type": "move",
+      "number_of_manifest_in_one_run":20,
+      "files_structure": {
+        "skip_rows": "1",
+        "column_separator": ","
+      }
+    }
+  },
+  "ads_storage": {
+    "instance_id": "",
+    "username": "",
+    "server":"",
+    "options":{
+      "default_strategy":"merge"
+    }
+  }
+}
