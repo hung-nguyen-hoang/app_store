@@ -178,7 +178,7 @@ This options are applied right after the configuration change
     * **default_strategy** (optional) (default -> data_vault) (options -> data_vault/merge) - this settings specified which strategy should be used for data integration. This cannot be change after first integration without full ADS wipe.
     * **number_of_batches_in_one_run** (optional) (default -> 1) - the number of batches which should be processed in one run of ADS integrator. In case, that you have lot of small batches it is faster to integrate them in one run.
     * **number_of_paraller_queries** (optional) (default -> 8) - the max number of parallel executions of COPY command.
-    * **number_of_paraller_integrations** (optional) (default -> 1) - the number of parallel integrations to stage tables. This option is controlling how many merge commands from source to stage will be executed in same time.
+    * **number_of_parallel_integrations** (optional) (default -> 1) - the number of parallel integrations to stage tables. This option is controlling how many merge commands from source to stage will be executed in same time.
     * **number_of_parallel_entities_integrations** (optional) (default -> 1) - the number of parallel integrations of one entity to source tables. This options is setting how many entities will be integrated in parallel. 
     * **integration_group_size** (optional) (default -> 1) - the max number of files integrated by one COPY command. In case of lot of small files, this number should be bigger then 1.
     * **join_files** (optional) (default -> false) - this option will take number of files specified in integration_group_size and compact them in to the one file. Then only this one file is copied by vertica Copy Command. 
