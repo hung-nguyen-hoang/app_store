@@ -1,0 +1,12 @@
+{
+  "name"       : "user_filters_brick",
+  "version"    : "0.0.1",
+  "category"   : "api_tools",
+  "language"   : "ruby",
+  "tags"       : "ruby sync synchronization",
+  "description" : "The User Filter Brick allows you to automate the addition and removal of users within your project. Once you have defined how your CSV should be formatted, the brick will get to work to insure that your users stay update. Keep in mind you can schedule this brick to run as a scheduled process.",
+  "created"    : "",
+  "is_live"    : true,
+  "parameters" : [
+  ]
+}

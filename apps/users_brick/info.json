@@ -1,0 +1,42 @@
+{
+  "name"       : "users_brick",
+  "version"    : "0.0.1",
+  "category"   : "api_tools",
+  "language"   : "ruby",
+  "tags"       : "ruby sync synchronization",
+  "description" : "The User Filter Brick allows you to automate the addition and removal of users within your project. Once you have defined how your CSV should be formatted, the brick will get to work to insure that your users stay update. Keep in mind you can schedule this brick to run as a scheduled process.",
+  "created"    : "",
+  "is_live"    : true,
+  "parameters" : [
+    {
+      "name"        : "first_name_column",
+      "description" : "The column in the CSV where the user's first name in stored.",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "last_name_column",
+      "description" : "The column in the CSV where the user's last name in stored.",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "login_column",
+      "description" : "The users login column (generally the email address).",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "email_column",
+      "description" : "A column containing the user's password.",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "role_column",
+      "description" : "A column containing role of the user in the project. Keep in mind this is not a filter.",
+      "type"        : "string",
+      "mandatory"   : true
+    }
+  ]
+}

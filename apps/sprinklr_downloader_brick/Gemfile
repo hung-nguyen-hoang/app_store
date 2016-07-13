@@ -1,0 +1,8 @@
+source 'https://rubygems.org'
+source 'file:///Users/atom/Documents/programing/RubymineProjects/repo'
+
+gem "json",'1.8.2'
+gem "omni_logger"
+gem "gooddata_connectors_base"
+gem "gooddata_connectors_metadata"
+gem "gooddata_connectors_downloader_sprinklr"

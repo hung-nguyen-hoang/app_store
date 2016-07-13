@@ -1,0 +1,5 @@
+source 'https://rubygems.org'
+ 
+gem 'gooddata', 'path' => './vendor/gooddata-ruby'
+gem 'gooddata_datawarehouse', :platform => 'jruby'
+gem 'ffi', '1.9.3', :platform => 'jruby'
