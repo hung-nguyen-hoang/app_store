@@ -1,0 +1,87 @@
+{
+  "name"       : "twitter_downloader_brick",
+  "version"    : "0.0.1",
+  "category"   : "api_tools",
+  "language"   : "ruby",
+  "tags"       : "ruby downloader twitter",
+  "description" : "The downloader for downloading data from Twitter accounts",
+  "created": "27-06-2016",
+  "is_live"    : false,
+   "author"   : {
+     "name" : "Richard Nagrant",
+     "email": "richard.nagrant@gooddata.com"
+   },
+  "parameters" : [
+    {
+      "name"        : "bds_bucket",
+      "description" : "The BDS Bucket name. The structure on BDS looks like this: bds_bucket/bds_folder/account_id/token",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "bds_folder",
+      "description" : "The BDS Bucket name. The structure on BDS looks like this: bds_bucket/bds_folder/account_id/token",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "bds_access_key",
+      "description" : "The BDS access key to connect to BDS.",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "bds_secret_key",
+      "description" : "The BDS secret key to connect to BDS.",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "account_id",
+      "description" : "The account id name. The structure on BDS looks like this: bds_bucket/bds_folder/account_id/token",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "token",
+      "description" : "The token name. The structure on BDS looks like this: bds_bucket/bds_folder/account_id/token",
+      "type"        : "string",
+      "mandatory"   : true
+    },
+    {
+      "name"        : "ID",
+      "description" : "This is an ID of downloader specified in configuration file",
+      "type"        : "string",
+      "mandatory"   : true
+    }
+  ,
+    {
+      "name"        : "consumer_key",
+      "description" : "Consumer key of an account you are going to use to download data of accounts specidied",
+      "type"        : "string",
+      "mandatory"   : true
+    }
+  ,
+    {
+      "name"        : "consumer_secret",
+      "description" : "Consumer secret of an account you are going to use to download data of accounts specidied",
+      "type"        : "string",
+      "mandatory"   : true
+    }
+  ,
+    {
+      "name"        : "access_token",
+      "description" : "Access token of an account you are going to use to download data of accounts specidied",
+      "type"        : "string",
+      "mandatory"   : true
+    }
+  ,
+    {
+      "name"        : "access_token_secret",
+      "description" : "Access token secret  of an account you are going to use to download data of accounts specidied",
+      "type"        : "string",
+      "mandatory"   : true
+    }
+
+  ]
+}

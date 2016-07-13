@@ -1,0 +1,7 @@
+source 'https://rubygems.org'
+
+gem 'gooddata','0.6.27'
+gem 'twitter'
+gem 'gooddata_connectors_base', :path => 'gooddata_connectors_base-s3'
+gem 'gooddata_connectors_metadata', :path => 'gooddata_connectors_metadata-0.0.9'
+gem 'gooddata_connectors_downloader_twitter', :path => 'gooddata_connectors_downloader_twitter-master'
