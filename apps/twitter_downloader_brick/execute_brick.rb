@@ -9,7 +9,6 @@ module GoodData::Bricks
       raise Exception, "The schedule parameters must contain ID of the downloader" if !params.include?("ID")
       metadata.set_source_context(params["ID"], {}, downloader)
       downloader.connect
-      
       entities = metadata.get_downloader_entities_ids
       entities.each do |entity|
         downloader.load_metadata(entity)
