@@ -1,6 +1,6 @@
 CSV Downloader Brick
 ==================
-This brick can be used for downloading CSV files from various sources (at the moment S3 source is supported)
+This brick can be used for downloading CSV files from various sources (at the moment S3 source is supported).
 
 ## Description
 
@@ -71,7 +71,7 @@ The deployment configuration for Gooddot could look like this:
       }
     }
 
-After running the Gooddot sync command, you only need to run the schedule on platform
+After running the Gooddot sync command, you only need to run the schedule on platform.
 
 ###  Additional schedule parameters
 
@@ -138,11 +138,11 @@ All other types are threaded as string-255
 
 ### Manifest files
 
-The second file if manifest file. This file will bind the uploaded files to one batch and this batch of files will be processed as one. The manifest file need to follow specific name convention:
+The second file is manifest file. This file will bind the uploaded files to one batch and this batch of files will be processed as one. The manifest file need to follow specific name convention:
 manifest-{batch_identification}_{sequence}.{time}
 
- * **batch_identification** - string which identifies batch. It is possible to group uploaded files to multiple batches (for example when each fie is loaded in different time window). Batch identification can be for example batchA and batchB.
- * **sequence** (optional) - sequence number of manifest files. The files uploaded on to the source need to follow the sequence. In case that sequence is broken, the batch will not be processed and connector will wait till the missing sequence is loaded.
+ * **batch_identification** - string which identifies batch. It is possible to group uploaded files to multiple batches (for example when each file is loaded in different time window). Batch identification can be for example batchA and batchB.
+ * **sequence** (optional) - sequence number of manifest files. The files uploaded to the source need to follow the sequence. In case that sequence is broken, the batch will not be processed and connector will wait till the missing sequence is loaded.
  * **time** - time of manifest creation in format YYYYMMDDHHMMSS (for example 20150217104924). The format can be easily change if needed.
 
 The name of the manifest can look like this: **manifest-batchB_1.20150217104924.csv**
@@ -177,7 +177,7 @@ The data files will contain data, which the user want to download. The downloade
 
 ## Configuration
 
-This section is containing information about the CSV downloader section of the configuration.json file. It is important to know, that CSV downloader is processing data in batches. One manifest file, mean one batch. If you want to set up the ADS integrator processing data downloader by CSV connector, you need to switch it to the batch mode. The name  of the batch is ID of the connector.
+This section is containing information about the CSV downloader section of the configuration.json file. It is important to know that CSV downloader is processing data in batches. One manifest file equals one batch. If you want to set up the ADS integrator processing data downloader by CSV connector, you need to switch it to the batch mode. The name of the batch is ID of the connector.
 
 The switching between S3 and SFTP is done by type parameter (s3,sftp)
 
@@ -268,13 +268,11 @@ The time format can be changed as desired. The documentation of possible tags ca
 
 ### Linked files
 
-In default setting the CSV downloader is downloading the data from the source and saving them to GoodData BDS. In case of bigger
-file this process can be quite time consuming and not wanted in all occasions. 
+In default setting the CSV downloader is downloading the data from the source and saving them to GoodData BDS. In case of bigger files this process can be quite time consuming and not wanted in all occasions. 
 
-If you can guarantee that file in source will not be deleted, you can use the link file functionality. In this case the CSV downloader will not
-download the data from source, but it will create LINK file on BDS with links to the source file. 
+If you can guarantee that file in source will not be deleted, you can use the link file functionality. In this case the CSV downloader will not download the data from source, but it will create LINK file on BDS with links to the source file. 
 
-The after you add additional settings to integrator, the files will be downloaded from source location directly by integrator.
+Then after you add additional settings to integrator, the files will be downloaded from source location directly by integrator.
 
 ### One entity in multiple versions
 
