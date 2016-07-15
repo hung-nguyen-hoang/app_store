@@ -19,7 +19,7 @@ The deployment on Ruby Executor infrastructure can be done manually.
 
 ## How it works
 
-The Twitter downloader scan accounts you specify in configuration. After logging of necessary details regarding account, it starts to gather information about tweets created from this account.
+The Twitter downloader scan accounts you specify in configuration. As main configuration is used remote file(see twitter_accounts_file).  After logging of necessary details regarding your account, it starts to gather information about accounts and tweets created from this accounts.
 All the information regarding user and tweets are gathered through getters of objects.
 
 ## Configuration
