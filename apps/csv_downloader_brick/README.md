@@ -274,6 +274,9 @@ If you can guarantee that file in source will not be deleted, you can use the li
 
 Then after you add additional settings to integrator, the files will be downloaded from source location directly by integrator.
 
+Please note, that when the linked files option is enabled, the checksum checking for only in case that you are uploading data to S3 without multi-part option. In case you want to/need to use the mutli-part option for uploading the files, you need to disable the checksum check.
+
+
 ### One entity in multiple versions
 
 The CSV Downloader is now supporting one entity in multiple version. The downloader will not only use latest version from feed file, but it will store and use all historical version. If you then use the old version in the manifest file, the downloaded will not create the new matadata file, but it will use the metadata file for this specific version. 
