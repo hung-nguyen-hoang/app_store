@@ -16,6 +16,7 @@ module GoodData::Bricks
           sprinklr_downloader.download_data(entity)
         end
       rescue => e
+        pp e.backtrace
         raise Exception, e.message
       ensure
         sprinklr_downloader.finish
